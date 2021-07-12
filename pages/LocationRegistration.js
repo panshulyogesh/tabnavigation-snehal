@@ -27,7 +27,11 @@ import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {loadOptions} from '@babel/core';
 
-import {check_password, read_store_async} from './Functions';
+import {
+  check_password,
+  read_store_async,
+  delete_registrations,
+} from './Functions';
 
 const LocationRegistration = ({navigation}) => {
   const [LocationName, setLocationName] = useState(''); //text input field loc
@@ -56,11 +60,8 @@ const LocationRegistration = ({navigation}) => {
     console.log('chosen item to delete', item);
 
     const store = async userdata => {
-      let loc_del = await read_store_async(
-        'location_event',
-        userdata,
-        'delete',
-      );
+      let loc_del = await delete_registrations('location_event', userdata);
+
       if (loc_del == 'succesfully deleted') {
         Alert.alert(
           'Success',
@@ -93,14 +94,6 @@ const LocationRegistration = ({navigation}) => {
       ],
       {cancelable: true},
     );
-
-    const getData = async () => {
-      const value = await AsyncStorage.getItem('user_config');
-      console.log('data read from async >>', value);
-      if (value != null) {
-        console.log(' after storing new data inside async storage ', value);
-      }
-    };
   };
 
   const handleSubmitPress = async () => {
@@ -110,7 +103,7 @@ const LocationRegistration = ({navigation}) => {
     } else {
       let data2 = JSON.stringify(LocationName);
       if (data2 != null) {
-        let loc_add = await read_store_async('location_event', data2, 'add');
+        let loc_add = await read_store_async('location_event', data2);
         if (loc_add == 'data is updated') {
           Alert.alert(
             'Success',

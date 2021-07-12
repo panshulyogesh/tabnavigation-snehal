@@ -5,7 +5,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {check_password} from './Functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Binding from './Binding';
-
+const pwd_status = 0;
 const SecondPage = ({navigation}) => {
   const [isDialogVisible, setisDialogVisible] = useState(false);
   const [view, setview] = useState(false);
@@ -22,7 +22,7 @@ const SecondPage = ({navigation}) => {
   const sendInput = async (inputText, close) => {
     console.log('password ' + inputText);
     let val = await check_password(inputText);
-    console.log('val', val);
+    // console.log('val', val);
     if (val == 'valid') {
       setview(false);
       setisDialogVisible(close);
@@ -48,6 +48,12 @@ const SecondPage = ({navigation}) => {
     if (read == null) {
       setview(true);
     } else {
+      // if(pwd_status==0||count_iter>5){
+
+      //   setisDialogVisible(true);
+      // }else{
+
+      // }
       setisDialogVisible(true);
       const obj = JSON.parse(read);
       let own1 = obj.owner;
@@ -57,7 +63,7 @@ const SecondPage = ({navigation}) => {
       let app1 = obj.appliance;
       let app2 = JSON.stringify(app1);
       // console.log(own1, loc1, app1);
-      // console.log(own2.length, loc2.length, app2.length);
+      console.log(own2.length, loc2.length, app2.length);
       if (own2.length) {
         setisDialogVisible(true);
         // console.log('owner registered');
@@ -69,14 +75,15 @@ const SecondPage = ({navigation}) => {
           setview2(true);
           setview1(false);
           setview(false);
-        }
-        if (app2.length > 3) {
-          setisDialogVisible(true);
-          // console.log('owner and loc and appliance registered');
-          setview3(true);
-          setview2(false);
-          setview1(false);
-          setview(false);
+
+          if (app2.length > 3) {
+            setisDialogVisible(true);
+            // console.log('owner and loc and appliance registered');
+            setview3(true);
+            setview2(false);
+            setview1(false);
+            setview(false);
+          }
         }
       }
     }

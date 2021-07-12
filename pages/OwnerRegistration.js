@@ -112,44 +112,6 @@ const OwnerRegistration = ({navigation}) => {
     }
   };
 
-  /*
-    const store = async configurations => {
-      console.log('-----------------------------');
-      const async_data_owner = await AsyncStorage.getItem('user_config');
-      let read = JSON.parse(async_data_owner);
-      console.log(' before reading data inside async storage ', read);
-      if (read == null) {
-        await AsyncStorage.setItem('user_config', configurations);
-        Alert.alert('Data is updated');
-        getData();
-      } else {
-        //console.log(read.owner);
-        console.log(password, '< >', read.owner.owner_password);
-        if (password == read.owner.owner_password) {
-          await AsyncStorage.setItem('user_config', configurations);
-          Alert.alert('Data is updated');
-        } else {
-          Alert.alert(
-            'Invalid password, Enter correct password to alter owner data.',
-          );
-        }
-        getData();
-      }
-    };
-
-    const getData = async () => {
-      const value = await AsyncStorage.getItem('user_config');
-      if (value != null) {
-        console.log(' after storing new data inside async storage ', value);
-      }
-    };
-
-    let data2 = JSON.stringify(configurations);
-    if (data2 != null) {
-      store(data2);
-    }
-  };*/
-
   return (
     <ScrollView>
       <Text style={{textAlign: 'center', fontWeight: 'bold', fontSize: 20}}>
@@ -379,17 +341,12 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#DDDDDD',
+    backgroundColor: 'red',
     padding: 10,
     width: 300,
     marginTop: 16,
   },
-  buttonOpen: {
-    backgroundColor: '#F194FF',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-  },
+
   textStyle: {
     color: 'white',
     fontWeight: 'bold',

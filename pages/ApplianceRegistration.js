@@ -22,7 +22,11 @@ import {
 } from 'native-base';
 import {useFocusEffect} from '@react-navigation/native';
 import ModalDropdown from 'react-native-modal-dropdown';
-import {check_password, read_store_async} from './Functions';
+import {
+  check_password,
+  read_store_async,
+  delete_registrations,
+} from './Functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const ApplianceRegistration = ({navigation}) => {
   const [Device, setDevice] = useState('');
@@ -51,11 +55,7 @@ const ApplianceRegistration = ({navigation}) => {
     console.log('chosen item to delete', item);
 
     const store = async userdata => {
-      let app_del = await read_store_async(
-        'appliance_event',
-        userdata,
-        'delete',
-      );
+      let app_del = await delete_registrations('appliance_event', userdata);
       if (app_del == 'succesfully deleted') {
         Alert.alert(
           'Success',
@@ -88,14 +88,6 @@ const ApplianceRegistration = ({navigation}) => {
       ],
       {cancelable: true},
     );
-
-    const getData = async () => {
-      const value = await AsyncStorage.getItem('user_config');
-      console.log('data read from async >>', value);
-      if (value != null) {
-        console.log(' after storing new data inside async storage ', value);
-      }
-    };
   };
 
   const handleSubmitPress = async () => {
@@ -105,7 +97,7 @@ const ApplianceRegistration = ({navigation}) => {
     } else {
       let data2 = JSON.stringify(Device);
       if (data2 != null) {
-        let app_add = await read_store_async('appliance_event', data2, 'add');
+        let app_add = await read_store_async('appliance_event', data2);
         if (app_add == 'data is updated') {
           Alert.alert(
             'Success',

@@ -3,10 +3,29 @@ import {
   View,
   ScrollView,
   TextInput,
-  Button,
   useEffect,
   Alert,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
+import {
+  check_password,
+  read_store_async,
+  delete_registrations,
+} from './Functions';
+
+import {
+  Left,
+  Text,
+  Button,
+  Icon,
+  Right,
+  CheckBox,
+  Title,
+  H1,
+  Spinner,
+} from 'native-base';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalDropdown from 'react-native-modal-dropdown';
@@ -15,7 +34,9 @@ const Binding = ({navigation}) => {
   const [asyncloc, setasyncloc] = useState([]);
   const [asyncapp, setasyncapp] = useState([]);
   const [location, setlocation] = useState([]);
+  const [owner, setowner] = useState([]);
   const [appliance, setappliance] = useState([]);
+  const [asyncbind, setasyncbind] = useState([]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -27,15 +48,65 @@ const Binding = ({navigation}) => {
     try {
       const value = await AsyncStorage.getItem('user_config');
       let async_data = JSON.parse(value);
-      console.log('async data loc:', async_data);
+      //  console.log('async data loc:', async_data);
       // console.log('async data app:', async_data.appliance);
+      setowner(async_data.owner.owner_name);
       setasyncloc(async_data.location);
       setasyncapp(async_data.appliance);
+      setasyncbind(async_data.Binding);
     } catch (error) {
       console.log('error', error);
     }
   };
-  const handleSubmitPress = () => {
+
+  const handledeletePress = item => {
+    console.log('chosen item to delete', item);
+
+    const store = async userdata => {
+      let bind_del = await delete_registrations('binding_event', userdata);
+      if (bind_del == 'succesfully deleted') {
+        Alert.alert(
+          'Success',
+          'deletion',
+          [
+            {
+              text: 'Ok',
+              onPress: () => navigation.navigate('TabStack'),
+            },
+          ],
+          {cancelable: false},
+        );
+      }
+    };
+
+    Alert.alert(
+      'Are you sure ',
+      ' you want  to delete',
+      [
+        {
+          text: 'Ok',
+
+          onPress: () => store(item),
+        },
+        {
+          text: 'cancel',
+
+          onPress: () => console.log('cancel pressed'),
+        },
+      ],
+      {cancelable: true},
+    );
+
+    const getData = async () => {
+      const value = await AsyncStorage.getItem('user_config');
+      console.log('data read from async >>', value);
+      if (value != null) {
+        console.log(' after storing new data inside async storage ', value);
+      }
+    };
+  };
+
+  const handleSubmitPress = async () => {
     if (!location) {
       alert('Please enter location');
       return;
@@ -43,118 +114,144 @@ const Binding = ({navigation}) => {
     if (!appliance) {
       alert('Please enter appliance');
       return;
-    }
-    console.log('chosen appliance ', location, 'location', appliance);
-    //let binding = location.concat(appliance);
-    let binding = async_data.owner.owner_name+'_'+location + '_' + appliance;
+    } else {
+      let app1 = JSON.parse(appliance);
+      let loc1 = JSON.parse(location);
+      let app2 = JSON.stringify(app1);
+      let loc2 = JSON.stringify(loc1);
+      let own1 = JSON.stringify(owner);
+      let binding = own1 + '_' + loc2 + '_' + app2;
 
-    console.log('binded appliance and location', binding);
+      console.log('binding', binding);
 
-    const store = async userdata => {
-      console.log('-----------------------------');
-      console.log('data from user ', userdata);
-      const read_async_data = await AsyncStorage.getItem('user_config');
-      let async_data = JSON.parse(read_async_data);
-      console.log('Async data:', async_data);
-      console.log('Async data for binding :', async_data.Binding);
-      console.log('Async data for Binding length :', async_data.Binding.length);
-      if (async_data.Binding.length <= 0) {
-        async_data.Binding.push(userdata);
-
-        console.log('data to be written in async', async_data);
-        let string_data = JSON.stringify(async_data);
-        await AsyncStorage.setItem('user_config', string_data);
-        Alert.alert('Data is updated');
-        getData();
-      } else {
-        let Binding_status = 0;
-        let Binding_len = async_data.Binding.length;
-
-        for (let x = 0; x < Binding_len; x++) {
-          console.log(
-            'userdata' + userdata,
-            'async Binding[x]' + async_data.Binding[x],
-          );
-          if (userdata == async_data.Binding[x]) {
-            Binding_status = 1;
-            break;
-          }
-        }
-        console.log('local status', Binding_status);
-        if (Binding_status == 0) {
-          async_data.Binding.push(userdata);
-          console.log('Binding_data:', async_data.Binding[0]);
-
-          console.log('data to be written in async', async_data);
-          let string_data1 = JSON.stringify(async_data);
-          await AsyncStorage.setItem('user_config', string_data1);
-          Alert.alert('Data is updated');
-          getData();
-          let xyz = await getData();
-          console.log('xyz', xyz);
-          let zxy = JSON.parse(xyz);
-          for (let i = 0; i < zxy.Binding.length; i++) {
-            if (zxy.Binding[i] == 'bedroom_fan') {
-              console.log('found this value');
-            }else{
-              console.log("not  found");
-            }
-          }
-        } else {
-          console.log('same data found ');
+      let data2 = binding;
+      if (data2 != null) {
+        let bind_add = await read_store_async('binding_event', data2);
+        if (bind_add == 'data is updated') {
           Alert.alert(
-            'Binding name already present, please insert new Binding name',
+            'Success',
+            'Data is updated',
+            [
+              {
+                text: 'Ok',
+                onPress: () => navigation.navigate('FirstPage'),
+              },
+            ],
+            {cancelable: false},
           );
-          Binding_status = 0;
+        } else if (bind_add == 'same data found ') {
+          Alert.alert(
+            'appliance name already present ',
+            'please insert new appliance name',
+            [
+              {
+                text: 'Ok',
+                onPress: () => navigation.navigate('FirstPage'),
+              },
+            ],
+            {cancelable: false},
+          );
         }
       }
-    };
-    const getData = async () => {
-      const value = await AsyncStorage.getItem('user_config');
-      console.log('data read from async >>', value);
-      if (value != null) {
-        console.log(' after storing new data inside async storage ', value);
-        return value;
-      }
-    };
-
-    let data2 = JSON.stringify(binding);
-    if (data2 != null) {
-      store(data2);
     }
   };
-  return (
-    <ScrollView>
-      <View>
-        <ModalDropdown
-          textStyle={{
-            fontSize: 16,
-            paddingTop: 8,
-            paddingBottom: 8,
-            alignItems: 'center',
-          }}
-          dropdownTextStyle={{fontSize: 30}}
-          options={asyncloc}
-          defaultValue={'select location'}
-          onSelect={(idx, value) => setlocation(value)}></ModalDropdown>
-      </View>
-      <View>
-        <ModalDropdown
-          textStyle={{
-            fontSize: 16,
-            paddingTop: 8,
-            paddingBottom: 8,
-            alignItems: 'center',
-          }}
-          dropdownTextStyle={{fontSize: 30}}
-          options={asyncapp}
-          defaultValue={'select appliance'}
-          onSelect={(idx, value) => setappliance(value)}></ModalDropdown>
 
-        <Button title="submit" color="green" onPress={handleSubmitPress} />
-      </View>
-    </ScrollView>
+  return (
+    <View
+      style={{
+        flex: 1,
+        height: 40,
+        marginTop: 20,
+        marginLeft: 35,
+        marginRight: 35,
+        margin: 10,
+      }}>
+      <ModalDropdown
+        textStyle={{
+          fontSize: 16,
+          paddingTop: 8,
+          paddingBottom: 8,
+          alignItems: 'center',
+        }}
+        dropdownTextStyle={{fontSize: 30}}
+        options={asyncloc}
+        defaultValue={'select location'}
+        onSelect={(idx, value) => setlocation(value)}></ModalDropdown>
+
+      <ModalDropdown
+        textStyle={{
+          fontSize: 16,
+          paddingTop: 8,
+          paddingBottom: 8,
+          alignItems: 'center',
+        }}
+        dropdownTextStyle={{fontSize: 30}}
+        options={asyncapp}
+        defaultValue={'select appliance'}
+        onSelect={(idx, value) => setappliance(value)}></ModalDropdown>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleSubmitPress()}>
+        <Text>Add Binding</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        keyExtractor={(item, id) => id}
+        data={asyncbind}
+        renderItem={({item}) => (
+          <View
+            style={{
+              flex: 1,
+              height: 40,
+              marginTop: 20,
+              margin: 10,
+            }}>
+            <Text
+              style={{
+                position: 'absolute',
+                width: '100%',
+                backgroundColor: 'beige',
+                bottom: 0,
+              }}>
+              {item}
+            </Text>
+            <Left>
+              <Button
+                onPress={() => handledeletePress(item)}
+                style={styles.actionButton}
+                danger>
+                <Icon name="trash" active />
+              </Button>
+            </Left>
+          </View>
+        )}
+        ItemSeparatorComponent={() => {
+          return <View style={styles.separatorLine}></View>;
+        }}
+      />
+    </View>
   );
 };
 
 export default Binding;
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#7fff00',
+    padding: 10,
+    width: 300,
+    marginTop: 16,
+  },
+
+  actionButton: {
+    marginLeft: 200,
+  },
+  actionButton1: {
+    marginLeft: 150,
+  },
+  separatorLine: {
+    height: 1,
+    backgroundColor: 'black',
+  },
+});
